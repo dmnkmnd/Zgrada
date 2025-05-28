@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css"  href="/css/base.css">
+    <title>ZGRADA</title>
+</head>
+<body>
+    <div class="vanjski">
+        <div class="grid-container">
+            <!-- prijava korisnika -->
+            <div class="grid-item">
+                <form class="novaForma" action="/signup" method="POST"> 
+                    <div class="naslov">
+                        <br>
+                        ZGRADA - vaš pomoćnik u upravljanju
+                        <hr>
+                        PRIJAVA KORISNIKA
+                        <br>
+                        <br> 
+                    </div>
+
+                    <div>
+                        <label>
+                            Ime:
+                        </label>
+                        <input type="text" name="ime" maxlength="40" required >
+                    </div>
+
+                    <div>
+                        <label>
+                            Prezime:
+                        </label>
+                        <input type="text"  name="prezime" maxlength="40" required >
+                    </div>
+
+
+                    <br>
+                    <div>
+                        <label>
+                            Ulica:
+                        </label>
+                        <input type="text" name="ulica" maxlength="40" required >
+                    </div>
+
+                    <div>
+                        <label>
+                            Kućni br:
+                        </label>
+                        <input type="text" name="kucniBr" maxlength="40" required >
+                    </div>
+
+                    <div>
+                        <label>
+                           Grad:
+                        </label>
+                        <input type="text" name="grad" maxlength="40" required >
+                    </div>
+
+                    <div>
+                        <label>
+                           Država:
+                        </label>
+                        <select name="drzava">
+                            <option value="Republika Hrvatska">Republika Hrvatska</option>
+                            <option value="Republika Slovenija">Republika Slovenija</option>
+                        </select> 
+                    </div>
+
+
+                    <br>
+                    <div>
+                        <label>
+                            E-mail:
+                        </label>
+                        <input type="text" name="email" maxlength="40" required id="mail" placeholder="neki@gmail.com" onfocusout="validatePwd()" >
+                        
+                    </div>
+                    
+                    <div>
+                        <label>
+                            Zaporka:
+                        </label>
+                        <input type="text" name="password" maxlength="40" required >
+                    </div>
+
+                    <div>
+                        <label>
+                            Broj tel:
+                        </label>
+                        <input type="text" name="brTelefon" maxlength="15" required placeholder="091111111" >
+                    </div>
+
+                    <br>
+    
+                    <input class="gumb" type="submit" name=”gumb" value="Prijava"> 
+                </form>
+                <br>
+            </div>
+
+            <!-- povratak natrag -->
+            <div class="grid-item">
+                <a href="/"> Povrtak na početnu stranicu </a>
+            </div>
+
+            <!-- prikaz ako je email vec zauzet-->
+            <% if (see=="da"){ %>
+                <div class="grid-item" redback="true" > 
+                    Email već unesen u bazu!
+                </div>
+            <% } %>
+
+        </div>
+    </div>
+
+    <%- include('partials/footer') %>
+</body>
+</html>

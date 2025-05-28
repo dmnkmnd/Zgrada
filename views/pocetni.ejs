@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- napravi -->
+<!-- a hrif za zaboravljenu lozinku i Novi korisnik -->
+<!-- napistai fju za prikazati password -->
+
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css"  href="/css/base.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZGRADA</title>
+</head>
+
+
+<body>
+    <div class="vanjski">
+        <div class="grid-container">
+            <!-- prijava korisnika -->
+            <div class="grid-item">
+                <form class="ulaznaForma" action="/login" method="POST" >
+                    <div class="naslov">
+                        <br>
+                        ZGRADA - vaš pomoćnik u upravljanju
+                        <hr>
+                        PRIJAVA KORISNIKA
+                        <br>
+                        <br>
+                    </div>
+                    <div>
+                        <label>
+                            E-mail:
+                        </label>
+                        <input type="text" id="idKorisnik" name="email">
+                    </div>
+    
+                    <div>
+                        <label>
+                            Zaporka:
+                        </label>
+                        <input type="password" id="sifra" name="password">
+    
+                        
+                        <div>
+                            <input type="checkbox" onclick="fja()">Show Password
+                        </div>
+                    </div>
+    
+                    <input class="gumb" type="submit" name=”gumb" value="Prijava"> 
+                </form>
+            </div>
+
+            <% if (see=="da"){ %>
+                <div class="grid-item" redback="true" > 
+                    Password i/ili Email neispravni, ponovno pokušajete!
+                </div>
+            <% } %>
+    
+            <!-- zaboravljena lozinka -->
+            <div class="grid-item">
+                <a href="/forgotten"> Zaboravljena Lozinka? </a>
+            </div>
+    
+            <!-- Novi korisnik -->
+            <div class="grid-item">
+                <a href="/newuser"> Novi korisnik </a>
+            </div>
+    
+        </div>
+    </div>
+
+    <%- include('partials/footer') %>
+</body>
+</html>

@@ -1,0 +1,70 @@
+.grid-area-home{
+    display: grid;
+    row-gap: 40px;
+    padding: 2% 8%;
+}
+
+
+.grid-item-home{
+    padding: 10px;
+    display: grid;
+    
+    border: 1px solid black;
+    border-radius: 5px;
+    background-color: white;
+}
+
+.nadzahtjev{
+    display: grid;
+    padding: 5px;
+    row-gap: 15px;
+}
+
+.zahtjev{
+    background-color: rgba(211, 211, 211, 0.384);
+    border: 1px solid black;
+    border-radius: 5px;
+    padding: 8px;
+}
+
+body{
+    background-color: rgba(211, 211, 211, 0.384);
+    font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+    font-size: 20px;
+}
+
+button{
+    width: 100%;
+    background-color: rgba(83, 170, 112, 0.591);
+    border-radius: 5px;
+    border: 0px solid black;
+    padding: 5px;
+    font-size: 16px;
+    border: 0.5px solid black;
+}
+
+.bijeli{
+    background-color: rgb(95, 148, 234);
+    grid-row-start: 1;
+    grid-row-end: 3;
+    grid-column-start: 2;
+}
+
+.vlasnik{
+    display: grid;
+    grid-template-columns: 80fr 20fr;
+    background-color: rgba(211, 211, 211, 0.384);
+    border: 1px solid black;
+    border-radius: 5px;
+    padding: 8px;
+}
+
+.buttonalike{
+    width: 100%;
+    background-color: rgba(83, 170, 112, 0.591);
+    border-radius: 5px;
+    border: 0px solid black;
+    padding: 5px;
+    font-size: 16px;
+    border: 0.5px solid black;
+}

@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" type="text/css"  href="/css/home.css">
+    <link rel="stylesheet" type="text/css"  href="/css/header.css">
+    <title>ZGRADA</title>
+</head>
+<body>
+    <%- include('partials/header') %>
+
+    <% var podUpravom = JSON.parse(podUpravomData) %>
+    <% var stanariVlas = JSON.parse(stanariVlasData) %>
+    <% var stanariNajam = JSON.parse(stanariNajamData) %>
+    <% var zahtjevi = JSON.parse(zahtjeviData) %>
+
+    <% var i = 0 %>
+    <% var j = 0 %>
+
+    <div class="grid-area-home">
+
+        <B> Nekretnine pod upravljanjem: </B>
+
+        <% podUpravom.forEach(element => { %>
+            <div class="grid-item-home">
+                <div class="grid-item-home-mini">
+                    Adresa: <b> <%= element.ulica  %> <%= element.kucnibr  %>, <%= element.grad  %>, <%= element.drzava  %> </b>
+                </div>
+
+                <div class="grid-item-home-mini">
+                    Ukupna kvadratura: <b> <%= element.ukpovrsina  %> m2 </b>
+                </div>
+
+                <div class="grid-item-home-mini">
+                    Namjena: <b> <%= element.namjena  %> </b>
+                </div>
+
+                <div class="grid-item-home-mini">
+                    Iznos pričuve: <b> <%= element.iznospricuve  %> €/m2 </b>
+                </div>
+                
+                
+                <br>
+                
+                <!-- promjena podataka o zgradi -->
+                <button onclick="seeform('meta+<%= i %>')"> Promjeni podatke </button>
+
+                <div class="grid-item-home-mini" style="display: none;"  id="meta+<%= i %>" >
+                    <form class="PodatciForma" action="/log/zgradaPodatci" method="POST" >
+                        <div>
+                            <label>
+                               Iznos pričuve po m2 (koristite decimalnu [točku]):
+                            </label>
+                            <input type="text" id="iznospricuve" name="iznospricuve" maxlength="40" required value=<%= element.iznospricuve%> >
+                            <br>
+
+                            <label>
+                                Predstavnik stanara (korisnik mora biti prijavljen):
+                            </label>
+                            <input type="text" id="emailglav" name="emailglav" maxlength="40" required value=<%= element.emailglav%> >
+
+                            <input type="hidden" name="emailProv" value=<%= element.emailglav %>>
+                            <input type="hidden" name="idzgrade" value=<%= element.idzgrade %>>
+
+                            <br>
+                            <input class="gumb" type="submit" name=”gumb" value="Spremi promjenu"> 
+                        </div>
+                    </form>
+                </div>
+
+
+                <br>
+                <!-- kvadraturno glasnje -->
+                <button onclick="seeform('metakv+<%= i %>')"> Pokreni kvadraturno glasnje </button>
+                <div class="grid-item-home-mini" style="display: none;"  id="metakv+<%= i %>">
+                    <form class="zahtjevForma" action="/log/zahtjev" method="POST" >
+                        <div>
+                            <label>
+                                Kratak opis zahtjeva (40 znakova):
+                            </label>
+                            <input type="text" id="kratakopis" name="kratakopis" maxlength="40" required>
+                        </div>
+
+                        <div>
+                            <label>
+                                Opis zahtjeva (2000 znakova):
+                            </label>
+                        </div>
+                        <div>
+                            <textarea rows="5" cols="70" id="Opis" name="opis" maxlength="2000" required> Opis... </textarea>
+                        </div>
+
+                        <div>
+                            <input type="hidden" name="email" value="svi">
+                            <input type="hidden" name="idzgrade" value=<%= element.idzgrade%> >   
+                        </div>
+
+                        <div>
+                            <input class="gumb" type="submit" name=”gumb" value="Podnesi"> 
+                        </div>
+                    </form>
+                </div>
+
+                <br>
+                <!-- dodavanje novih stanova -->
+                <button onclick="seeform('metanp+<%= i %>')"> Dodaj novu jedinicu </button>
+                <div class="grid-item-home-mini" style="display: none;"  id="metanp+<%= i %>">
+                    <form class="novaJedinicaForma" id="forma<%= i %>" action="/log/novaJedinica" method="POST" >
+                        <div>
+                            Kako biste dodali novog korisnika, on mora biti registriran na sustav Zgrada.com 
+                        </div>
+
+                        <hr>
+                        <div class="vlasnik" id="addField<%= i %>">
+                            <div>
+                                <label>
+                                    Email (su)vlasnika jedinice:
+                                </label>
+                                <input type="text" name="email" maxlength="40" required >
+                            </div>
+                            
+                            <div>
+                                <label>
+                                        Udio u vlasništvu ([0.0000 , 1.0000]):
+                                </label>
+                                <input type="number" name="udio" step="0.0001"  min="0" max="1" required >
+                            </div>
+                            
+                            <button class="bijeli" onclick="addField('forma<%= i %>', 'addField<%= i %>', )"> + Dodatni suvlasnik + </button>
+                        </div>
+
+                        <div>
+                            <label>
+                                Površina jedinice (s dec. točkom):
+                            </label>
+                            <input type="text" name="povrsina" maxlength="40" required >
+                        </div>
+                        
+                        <div>
+                            <label>
+                                Kat (0=prizemlje, 1=prvi kat, ...):
+                            </label>
+                            <input type="number" name="kat" maxlength="2" required >
+                        </div>
+
+                        <div>
+                            <label>
+                                Broj stanovnika u jedinici:
+                            </label>
+                            <input type="number" name="brukucana" max="99"  min="0" required >
+                        </div>
+
+                        <div>
+                            <label>
+                                Način korištenja:
+                             </label>
+                             <select name="nacinkoristenja">
+                                <option value="1"> Stambena nekretnina </option>
+                                <option value="2"> Uredska nekretnina </option>
+                                <option value="3"> Uslužna djelatnost </option>
+                                <option value="4"> Apartman </option>
+                                <option value="5"> Drugo </option>
+                             </select> 
+                        </div>
+
+                        <div>
+                            <label>
+                                Koeficijent pričuve:
+                            </label>
+                            <input type="text" name="koefpricuve" maxlength="40" required >
+                        </div>
+
+                        <div>
+                            <input type="hidden" name="idzgrade" value=<%= element.idzgrade%> > 
+                            <input type="hidden" name="emailProv" value=<%= element.emailglav %>>  
+                        </div>
+
+                        <div>
+                            <input class="gumb" type="submit" name=”gumb" value="Podnesi"> 
+                        </div>
+                    </form>
+                </div>
+
+                <!-- ispis podataka o aktivnim zahtjevima u zgradi (SVI ne samo vezani uz predstavnika kao pošiljatelja ili primatelja) -->
+                <br>
+                <br>
+                <b>  Aktualni zahtjevi u zgradi: </b>
+                <div class="nadzahtjev">
+                    <% zahtjevi[i].forEach(zah => { %>
+                        <div class="zahtjev">
+                            <div>
+                                <b>Problem:</b> <%= zah.kratakopis %>
+                            </div>
+                            <div>
+                                <b>Opis:</b> <%=  zah.opis %>
+                            </div>
+                            <div>
+                                <b>Email podnostelja:</b> <%=  zah.emailpodnositelj %>
+                            </div>
+                            <div>
+                                <b>Trenutak:</b> <%=  zah.zapispocetka %>
+                            </div>
+                        </div>
+                    <% }) %>
+                </div>
+
+                <!-- ispis podataka o vlasnicima stanova u zgradi -->
+
+                <br>
+                <br>
+
+                <b>  Vlasnici nekretnina u zgradi: </b>
+                <div class="nadzahtjev">
+                    <% j=0 %>
+                    <% stanariVlas[i].forEach(stan => { %>
+
+                        <div class="zahtjev">
+                            <div class="grid-item-home-mini">
+                                Adresa: <b> <%= stan.ulica  %> <%= stan.kucnibr  %>, <%= stan.grad  %>, <%= stan.drzava  %> </b>
+                            </div>
+                            <div class="grid-item-home-mini">
+                                Kvadratura: <b> <%= stan.povrsina  %> m2 </b>
+                            </div>
+                            <div class="grid-item-home-mini">
+                                Kat: <b> <%= stan.kat  %> </b>
+                            </div>
+
+                            <div class="grid-item-home-mini">
+                                ID nekretnine: <b> <%= stan.idnekretnine  %> </b>
+                            </div>
+
+                            <div class="grid-item-home-mini">
+                                Udio u nekretnini: <b> <%= stan.udio *100 %> % </b>
+                            </div>
+
+                            <div class="grid-item-home-mini">
+                                Broj stanara u jedinici: <b> <%= stan.brukucana  %>  </b>
+                            </div>
+
+                            <div class="grid-item-home-mini">
+                                Email vlasnik: <b> <%= stan.email %> </b>
+                            </div>
+
+                            <div class="grid-item-home-mini">
+                                Način korištenja: <b> <%= stan.nacinkoristenja %> </b>
+                            </div>
+
+                            <div class="grid-item-home-mini">
+                                <button onclick="seeform('meta3+<%= j %>')"> Novi zahtjev </button>
+                            </div>
+                            <div class="grid-item-home-mini" style="display: none;"  id="meta3+<%= j %>">
+                                <form class="zahtjevForma" action="/log/zahtjev" method="POST" >
+                                    <div>
+                                        <label>
+                                            Kratak opis zahtjeva (40 znakova):
+                                        </label>
+                                        <input type="text" id="kratakopis" name="kratakopis" maxlength="40" required>
+                                    </div>
+            
+                                    <div>
+                                        <label>
+                                            Opis zahtjeva (2000 znakova):
+                                        </label>
+                                    </div>
+                                    <div>
+                                        <textarea rows="5" cols="70" id="Opis" name="opis" maxlength="2000" required> Opis... </textarea>
+                                    </div>
+                                    
+                                    <div>
+                                        <input type="hidden" name="idnekretnine" value=<%= stan.idnekretnine%>>
+                                    </div>
+            
+                                    <div>
+                                        <input type="hidden" name="email" value=<%= stan.email %>>
+                                    </div>
+            
+                                    <div>
+                                        <input class="gumb" type="submit" name=”gumb" value="Podnesi"> 
+                                    </div>
+                                </form>
+                            </div>
+
+                        </div>
+                        <% j++ %>
+                    <% }) %>
+                </div>
+
+                <br>
+                <br>
+
+                <!-- ispis podataka o najmoprimcima stanova u zgradi -->
+
+                <b> Korisnici u najmu u zgradi: </b>
+                <div class="nadzahtjev">
+                    <% stanariNajam[i].forEach(stan => { %>
+
+                        <div class="zahtjev">
+                            <div class="grid-item-home-mini">
+                                Adresa: <b> <%= stan.ulica  %> <%= stan.kucnibr  %>, <%= stan.grad  %>, <%= stan.drzava  %> </b>
+                            </div>
+                            <div class="grid-item-home-mini">
+                                Kvadratura: <b> <%= stan.povrsina  %> m2 </b>
+                            </div>
+                            <div class="grid-item-home-mini">
+                                Kat: <b> <%= stan.kat  %> </b>
+                            </div>
+
+                            <div class="grid-item-home-mini">
+                                ID nekretnine: <b> <%= stan.idnekretnine  %> </b>
+                            </div>
+
+                            <div class="grid-item-home-mini">
+                                Email vlasnik: <b> <%= stan.emailnajam %> </b>
+                            </div>
+
+                            <div class="grid-item-home-mini">
+                                Način korištenja: <b> <%= stan.nacinkoristenja %> </b>
+                            </div>
+
+                        </div>
+                    
+                    <% }) %>
+                </div>
+                
+
+                <% i++ %>
+            </div>
+        <% }) %>
+
+    </div>
+    
+    <%- include('partials/footer') %>
+</body>
+    <script src="/scripts/fje.js"></script>
+</html>

@@ -1,0 +1,54 @@
+.vanjski{
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    height: 100%; 
+    width: 100%;
+    padding: 60px 0px;
+}
+
+
+.grid-container{
+    display: grid;
+    grid-template-columns: 100fr;
+    row-gap: 30px;
+    max-width: fit-content;
+}
+
+.grid-item{
+    background-color: rgba(211, 211, 211, 0.384);
+    border: 1px solid black;
+    border-radius: 5px;
+    padding: 10px 100px;
+    margin: 10px;
+    display: grid;
+    row-gap: 10px;
+    text-align: center;   
+}
+
+.gumb{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0% 38%;
+    
+}
+
+.ulaznaForma{
+    display: grid;
+    row-gap: 10px;
+    margin: 20px;
+}
+
+.naslov{
+    font-size: larger;
+}
+
+div[redback]{
+    background-color: rgb(189, 81, 81);
+}
+
+.foot{
+    position: relative;
+    bottom: 0px;
+}

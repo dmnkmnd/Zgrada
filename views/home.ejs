@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css"  href="/css/home.css">
+    <link rel="stylesheet" type="text/css"  href="/css/header.css">
+    <title>ZGRADA</title>
+</head>
+<body>
+    <%- include('partials/header') %>
+    <% var asset = JSON.parse(assetData) %>
+    <% var najam = JSON.parse(najamData) %>
+    <% var susjedi = JSON.parse(susjediData) %>
+    <% var susjedinajam = JSON.parse(susjediNajamData) %>
+
+
+    <% var zahtjevVlUn = JSON.parse(zahtjevVlUnData) %>
+    <% var zahtjevNaUn = JSON.parse(zahtjevNaUnData) %>
+    <% var zahtjevOd = JSON.parse(zahtjevOdData) %>
+
+    
+
+    <% var i=0 %>
+    <% var j=0 %>
+    
+    <% if( zahtjevOd[0]!== undefined ) { %>
+        <div class="grid-area-home">
+            <B> ZAHTJEVI: </B>
+            <div class="grid-item-home">
+                <div class="nadzahtjev">
+                    <% zahtjevOd.forEach(zah => { %>
+                        <div class="zahtjev">
+                            <div>
+                                <b>Problem:</b> <%= zah.kratakopis %>
+                            </div>
+                            <div>
+                                <b>Opis:</b> <%=  zah.opis %>
+                            </div>
+                            <div>
+                                <b>Trenutak:</b> <%=  zah.zapispocetka %>
+                            </div>
+    
+                            <div>
+                                <b> Adresa nekretnine:</b> <%= zah.ulica  %> <%= zah.kucnibr  %>, <%= zah.grad  %>, <%= zah.drzava  %> 
+                            </div>
+    
+                            <div>
+                                <b> Kat nekretnine:</b> <%= zah.kat  %>
+                            </div>
+    
+                            <div>
+                                <b> Email podnositelja:</b> <%= zah.emailpodnositelj  %>
+                            </div>
+
+                            <br>
+                            <div>
+                                <form class="odlukaForma" action="/log/odluka" method="POST" >
+                                    <input type="radio" id="da" name="odluka" value= 1>
+                                    <label for="da">Prihvati zahtjev</label>
+                                    <br>
+                                    <input type="radio" id="ne" name="odluka" value= -1>
+                                    <label for="ne">Odbiji zahtjev</label>
+                                    <br>
+                                    <input type="hidden" name="idzahtjeva" value=<%= zah.idzahtjeva %>>
+                                    <br>
+                                    <input class="gumb" type="submit" name=”gumb" value="Potvrdi odluku">  
+                                </form>
+                            </div>
+
+    
+                        </div>
+                    <% }) %>
+                </div>
+            </div>
+        </div>
+    <% } %>
+
+
+
+    <div class="grid-area-home">
+        <B> VLASNIŠTVO: </B>
+        <% asset.forEach(element => { %>
+            <div class="grid-item-home">
+                <div class="grid-item-home-mini">
+                    Adresa: <b> <%= element.ulica  %> <%= element.kucnibr  %>, <%= element.grad  %>, <%= element.drzava  %> </b>
+                </div>
+                <div class="grid-item-home-mini">
+                    Kvadratura: <b> <%= element.povrsina  %> m2 </b>
+                </div>
+                <div class="grid-item-home-mini">
+                    Kat: <b> <%= element.kat  %> </b>
+                </div>  
+                <div class="grid-item-home-mini">
+                    Broj ukućana: <b> <%= element.brukucana  %> </b>
+                </div> 
+                <div class="grid-item-home-mini">
+                    Mjesečna pričuva: <b> <%= element.povrsina * element.iznospricuve *  element.koefpricuve %> € </b>
+                </div>
+
+                <hr>
+
+                <div class="grid-item-home-mini">
+                    Aktualni podnešeni zahtjevi:
+                    <% if(zahtjevVlUn[i] !== undefined){ %>
+                        <div class="nadzahtjev">
+                            <% zahtjevVlUn[i].forEach(zah => { %>
+                                <div class="zahtjev">
+                                    <div>
+                                        <b>Problem:</b> <%= zah.kratakopis %>
+                                    </div>
+                                    <div>
+                                        <b>Opis:</b> <%=  zah.opis %>
+                                    </div>
+                                    <div>
+                                        <b>Trenutak:</b> <%=  zah.zapispocetka %>
+                                    </div>
+                                </div>
+                                
+                            <% }); %>
+                        </div> 
+                    <% } %>
+                </div>
+                <!-- ostale opcije  -->
+                <hr>
+                <div class="grid-item-home-mini">
+                    <form action="/log/upravljanjeNajmom" method="POST">
+                        <input type="hidden" name="idnekretnine" value=<%= element.idnekretnine %>>        
+                        <input class="buttonalike" type="submit" name=”gumb" value="Dodatne opcije"> 
+                    </form>
+                </div>
+
+
+                <!-- zahtjev  -->
+                <hr>
+                <div class="grid-item-home-mini">
+                    <button onclick="seeform('meta+<%= i %>')"> Novi zahtjev</button>
+                </div>
+                <div class="grid-item-home-mini" style="display: none;"  id="meta+<%= i %>">
+                    <form class="zahtjevForma" action="/log/zahtjev" method="POST" >
+                        <div>
+                            <label>
+                                Kratak opis zahtjeva (40 znakova):
+                            </label>
+                            <input type="text" id="kratakopis" name="kratakopis" maxlength="40" required>
+                        </div>
+
+                        <div>
+                            <label>
+                                Opis zahtjeva (2000 znakova):
+                            </label>
+                        </div>
+                        <div>
+                            <textarea rows="5" cols="70" id="Opis" name="opis" maxlength="2000" required> Opis... </textarea>
+                        </div>
+                        
+                        <% if(susjedi[i] !== undefined){ %>
+                            <div>
+                                <fieldset>
+                                    <legend> Adrese Uključenih (označite bar jednu osobu): </legend>
+                                    
+                                        <% susjedi[i].forEach(osoba => { %>
+                                            <label>
+                                                <input type="checkbox" name="email" value=<%= osoba.email %> >
+                                                <%= osoba.ime %> <%= osoba.prezime %> (<b> <%= osoba.email %> </b>)
+                                            </label>
+                                            <br> 
+                                        <% }); %> 
+
+                                </fieldset>
+                            </div>
+                        <% } %>
+
+                        <div>
+                            <input type="hidden" name="idnekretnine" value=<%= element.idnekretnine %>>
+                            <input type="hidden" name="idzgrade" value=<%= element.idzgrade %>>
+                        </div>
+
+                        <div>
+                            <input class="gumb" type="submit" name=”gumb" value="Podnesi"> 
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <% i++ %> 
+        <% }); %>   
+
+        <% if(asset[0]=== undefined) {%>
+            <div class="grid-item-home">
+                Trenutno nemate niti jednu Vašu nekretninu unesenu u sustav!
+            </div>
+        <% } %>
+    
+        <B> NAJAM: </B>
+        <% najam.forEach(element => { %>
+            <div class="grid-item-home">
+                <div class="grid-item-home-mini">
+                    Adresa: <b> <%= element.ulica  %> <%= element.kucnibr  %>, <%= element.grad  %>, <%= element.drzava  %> </b>
+                </div>
+                <div class="grid-item-home-mini">
+                    Kvadratura: <b> <%= element.povrsina  %> m2 </b>
+                </div>
+                <div class="grid-item-home-mini">
+                    Kat: <b> <%= element.kat  %> </b>
+                </div> 
+                <div class="grid-item-home-mini">
+                    Broj ukućana: <b> <%= element.brukucana  %> </b>
+                </div> 
+                <div class="grid-item-home-mini">
+                    Mjesečna pričuva: <b> <%= element.povrsina * element.iznospricuve *  element.koefpricuve %> € </b>
+                </div>
+
+                <hr>
+                <div class="grid-item-home-mini">
+                    Aktualni podnešeni zahtjevi:
+                    <% if(zahtjevNaUn[i] !== undefined){ %>
+                        <div class="nadzahtjev">
+                            <% zahtjevNaUn[i].forEach(zah => { %>
+                                <div class="zahtjev">
+                                    <div>
+                                        <b>Problem:</b> <%= zah.kratakopis %>
+                                    </div>
+                                    <div>
+                                        <b>Opis:</b> <%=  zah.opis %>
+                                    </div>
+                                    <div>
+                                        <b>Trenutak:</b> <%=  zah.zapispocetka %>
+                                    </div>
+                                </div>
+                                
+                            <% }); %>
+                        </div>
+                    <% }; %>  
+                </div>
+
+                <hr>
+                <div class="grid-item-home-mini">
+                    <button onclick="seeform('meta2+<%= j %>')"> Novi zahtjev</button>
+                </div>
+                <div class="grid-item-home-mini" style="display: none;"  id="meta2+<%= j %>" >
+                    <form class="zahtjevForma" action="/log/zahtjev" method="POST" >
+                        <div>
+                            <label>
+                                Kratak opis zahtjeva (40 znakova):
+                            </label>
+                            <input type="text" id="kratakopis" name="kratakopis" maxlength="40" required>
+                        </div>
+
+                        <div>
+                            <label>
+                                Opis zahtjeva (2000 znakova):
+                            </label>
+                        </div>
+                        <div>
+                            <textarea rows="5" cols="70" id="Opis" name="opis" maxlength="2000" required> Opis... </textarea>
+                        </div>
+                        
+                        <div>
+                            <fieldset>
+                                <legend> Adrese Uključenih (označite bar jednu osobu): </legend>
+                                    <% susjedinajam[j].forEach(osoba => { %>
+                                        <label>
+                                            <input type="checkbox" name="email" value=<%= osoba.email %> >
+                                            <%= osoba.ime %> <%= osoba.prezime %> (<b> <%= osoba.email %> </b>)
+                                        </label>
+                                        <br> 
+                                    <% }); %> 
+                                   
+                            </fieldset>
+                        </div>
+
+                        <div>
+                            <input type="hidden" name="idnekretnine" value=<%= element.idnekretnine %>>
+                            <input type="hidden" name="idzgrade" value=<%= element.idzgrade %>>
+                        </div>
+
+                        <div>
+                            <input class="gumb" type="submit" name=”gumb" value="Podnesi"> 
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <% j++ %>
+        <% }); %> 
+
+        <% if(najam[0]=== undefined) {%>
+            <div class="grid-item-home">
+                Trenutno nemate niti jednu unajmljenu nekretninu unesenu u sustav!
+            </div>
+        <% } %>
+    </div>
+    
+
+    <%- include('partials/footer') %>
+</body>
+    <script src="/scripts/fje.js"></script>
+</html>
+
+

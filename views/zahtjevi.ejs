@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css"  href="/css/home.css">
+    <link rel="stylesheet" type="text/css"  href="/css/header.css">
+    <title>ZGRADA</title>
+</head>
+<body>
+    <%- include('partials/header') %>
+
+    <% var zadao = JSON.parse(zadaoData) %>
+    <% var zadali = JSON.parse(zadaliData) %>
+
+    <% if( zadao[0]!== undefined ) { %>
+        <div class="grid-area-home">
+            <B> Moji zahtjevi: </B>
+            <div class="grid-item-home">
+
+                <div class="nadzahtjev">
+                    <% zadao.forEach(zah => { %>
+                        <div class="zahtjev"> 
+                            <div>
+                                <b>Problem:</b> <%= zah.kratakopis %>
+                            </div>
+                            <div>
+                                <b>Opis:</b> <%=  zah.opis %>
+                            </div>
+                            <div>
+                                <b>Trenutak:</b> <%=  zah.zapispocetka %>
+                            </div>
+    
+                            <div>
+                                <b> Adresa nekretnine:</b> <%= zah.ulica  %> <%= zah.kucnibr  %>, <%= zah.grad  %>, <%= zah.drzava  %> 
+                            </div>
+    
+                            <div>
+                                <b> Kat nekretnine:</b> <%= zah.kat  %>
+                            </div>
+    
+                            <div>
+                                <b> Email podnositelja:</b> <%= zah.emailpodnositelj  %>
+                            </div>
+
+                            <div>
+                                <b> Aktivni:</b> <%= zah.aktivan  %>
+                            </div>
+
+                            <div>
+                                <b> Odluka:</b> <%= zah.odobren %>
+                            </div>
+                        </div>
+                    <% }) %>
+                </div>
+
+            </div>
+        </div>
+    <% } %>
+
+<% if( zadali[0]!== undefined ) { %>
+    <div class="grid-area-home">
+        <B> Zahtjevi koji su mi dani na razmatranje: </B>
+        <div class="grid-item-home">
+
+            <div class="nadzahtjev">
+                <% zadali.forEach(zah => { %>
+                    <div class="zahtjev"> 
+                        <div>
+                            <b>Problem:</b> <%= zah.kratakopis %>
+                        </div>
+                        <div>
+                            <b>Opis:</b> <%=  zah.opis %>
+                        </div>
+                        <div>
+                            <b>Trenutak:</b> <%=  zah.zapispocetka %>
+                        </div>
+
+                        <div>
+                            <b> Adresa nekretnine:</b> <%= zah.ulica  %> <%= zah.kucnibr  %>, <%= zah.grad  %>, <%= zah.drzava  %> 
+                        </div>
+
+                        <div>
+                            <b> Kat nekretnine:</b> <%= zah.kat  %>
+                        </div>
+
+                        <div>
+                            <b> Email podnositelja:</b> <%= zah.emailpodnositelj  %>
+                        </div>
+
+                        <div>
+                            <b> Aktivni:</b> <%= zah.aktivan  %>
+                        </div>
+
+                        <div>
+                            <b> Odluka uključenih :</b> <%= zah.odobren  %>
+                        </div>
+
+                        <div>
+                            <b> Vaša odluka :</b> <%= zah.odluka  %>
+                        </div>
+                    </div>
+                <% }) %>
+            </div>
+
+        </div>
+    </div>
+<% } %>
+
+</body>
+</html>

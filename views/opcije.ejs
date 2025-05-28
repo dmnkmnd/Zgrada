@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css"  href="/css/home.css">
+    <link rel="stylesheet" type="text/css"  href="/css/header.css">
+    <title>ZGRADA</title>
+</head>
+<body>
+    <%- include('partials/header') %>
+
+    <% var najmoprimci = JSON.parse(najmoprimciData) %>
+    <% var nekretnina = JSON.parse(nekretninaData) %>
+
+    <!-- podatci o jedinci uz promjene -->
+    <div class="grid-area-home">
+        <B> Podatci o nekretnini: </B>
+        <div class="grid-item-home">
+            <div class="grid-item-home-mini">
+                Adresa: <b> <%= nekretnina[0].ulica %> <%= nekretnina[0].kucnibr %>, <%= nekretnina[0].grad %>, <%= nekretnina.drzava %> </b>
+            </div>
+
+            <div class="grid-item-home-mini">
+                Kat: <b> <%= nekretnina[0].kat %> </b>
+            </div>
+
+            <div class="grid-item-home-mini">
+                Površina: <b> <%= nekretnina[0].povrsina %> m2 </b>
+            </div>
+
+            <div class="grid-item-home-mini">
+                Broj ukućana: <b> <%= nekretnina[0].brukucana %> </b>
+            </div>
+            <br>
+
+            <div class="grid-item-home-mini">
+                <button onclick="seeform('metaOP')"> Uredi podatke </button>
+            </div> 
+
+            <div id="metaOP" style="display: none;">
+                NAPOMENA: niti jedna promjena nije vidljiva u sustavu odmah već nakon potvrde predstavnika stanara !
+                <hr>
+                <form action="/log/promjenaBrStanara" method="POST">
+                    <div>
+                        <label>
+                            <b> Broj osoba u najmu </b>
+                        </label>
+                        <input type="number" name="brukucana" min="0" max="99" required>
+
+                        <input type="hidden" name="idnekretnine" value=<%= nekretnina[0].idnekretnine %>>
+                        <input type="hidden" name="idzgrade" value=<%= nekretnina[0].idzgrade %>>
+                        <input type="hidden" name="emailglav" value=<%= nekretnina[0].emailglav %>>
+
+                    
+                        <input type="submit" name=”gumb1" value="Potvrdi"> 
+                    </div> 
+                </form>
+
+                <br>
+                <form action="/log/promjenaVlasnika" method="POST">
+                    <div>
+                        <label>
+                            <b> Email novog vlasnika </b> (koji je već unesen u sutav)
+                        </label>
+                        <input type="text" name="emailnovi" maxlength="40" required>
+                   
+
+                        <input type="hidden" name="idnekretnine" value=<%= nekretnina[0].idnekretnine %>>
+                        <input type="hidden" name="idzgrade" value=<%= nekretnina[0].idzgrade %>>
+                        <input type="hidden" name="emailglav" value=<%= nekretnina[0].emailglav %>>
+
+                    
+                        <input type="submit" name=”gumb2" value="Potvrdi"> 
+                    </div> 
+                </form>
+            </div>
+            
+
+
+        </div>
+    </div>
+
+
+    <!-- trenutni u najmu + obriši pojedine -->
+    <% if( najmoprimci[0] !== undefined ) { %>
+        <div class="grid-area-home">
+            <B> Podatci o osobi u najmu: </B>
+            <div class="grid-item-home">
+    
+                <div class="grid-item-home-mini">
+                    Ime: <b> <%= najmoprimci[0].ime  %> </b>
+                </div>
+                <div class="grid-item-home-mini">
+                    Prezime: <b> <%= najmoprimci[0].prezime  %> </b>
+                </div>
+    
+                <div class="grid-item-home-mini">
+                    Adresa: <b> <%= najmoprimci[0].ulica  %> <%= najmoprimci[0].kucnibr  %>, <%= najmoprimci[0].grad  %>, <%= najmoprimci[0].drzava  %> </b>
+                </div>
+    
+                <div class="grid-item-home-mini">
+                    Email: <b> <%= najmoprimci[0].email  %> </b>
+                </div>
+    
+                <div class="grid-item-home-mini">
+                    Broj Telefona: <b> <%= najmoprimci[0].brtelefon  %> </b>
+                </div>
+
+                <hr>
+                <div class="grid-item-home-mini">
+                    <form action="/log/otkaziNajam" method="POST">
+                        <input type="hidden" name="idnekretnine" value=<%= nekretnina[0].idnekretnine %>>
+                        <input type="hidden" name="idzgrade" value=<%= nekretnina[0].idzgrade %>>
+                        <input type="hidden" name="udio" value=<%= nekretnina[0].udio %>>         
+                        <input class="buttonalike" type="submit" name=”gumb" value="Otkaži pružanje najma"> 
+                    </form>
+                    Napomena: ako niste vlasnik 50+% jedinice, sustav će pokrenuti glasanje o otkazivanju te automatski provesti potrebene radnje
+                </div>
+            </div>
+
+        </div>
+    <% } %>
+
+    <!-- novi u najmu -->
+    <% if( najmoprimci[0] == undefined ) { %>
+        <div class="grid-area-home">
+            <B> Dodajte iznajmljivanje u sustav </B>
+
+            <div class="grid-item-home">
+                <div class="grid-item-home-mini"></div>
+                    <form action="/log/dodajNajam" method="POST">
+                        <div>
+                            <label>
+                                <b> Email osobe u najmu </b> (samo jednu koja će biti kontakt):
+                            </label>
+                            <input type="text" name="emailnajam" maxlength="40" required>
+                        </div>
+
+                        <div>
+                            <label>
+                                <b> Broj osoba u najmu </b> (nije vidljivo u sustavu odmah već nakon potvrde predstavnika stanara ):
+                            </label>
+                            <input type="number" name="brukucana" min="0" max="99" required>
+                        </div>
+
+                        <input type="hidden" name="idnekretnine" value=<%= nekretnina[0].idnekretnine %>>
+                        <input type="hidden" name="idzgrade" value=<%= nekretnina[0].idzgrade %>>
+                        <input type="hidden" name="udio" value=<%= nekretnina[0].udio %>>
+                        <input type="hidden" name="emailglav" value=<%= nekretnina[0].emailglav %>>
+                        <hr>
+
+                        <div>
+                            Napomena: ako niste vlasnik 50+% jedinice, akcija nije vidljiva u sustavu odmah, već se pokreće glasanje o najmu. Završetkom glasanja sustav izvodi potrebene radnje.
+                        </div>
+                        <div>
+                            <input type="submit" name=”gumb" value="Potvrdi"> 
+                        </div>         
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    <% } %>
+
+
+    <%- include('partials/footer') %>
+</body>
+    <script src="/scripts/fje.js"></script>
+</html>

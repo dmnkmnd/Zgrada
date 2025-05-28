@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css"  href="/css/home.css">
+    <link rel="stylesheet" type="text/css"  href="/css/header.css">
+    <title>ZGRADA</title>
+</head>
+<body>
+    <%- include('partials/header') %>
+
+    <% var data = JSON.parse(userData) %>
+    <div class="grid-area-home">
+
+        <!-- podatci -->
+        <div class="grid-item-home">
+            <div class="grid-item-home-mini">
+                Ime: <b> <%= data.ime  %> </b>
+            </div>
+            <div class="grid-item-home-mini">
+                Prezime: <b> <%= data.prezime  %> </b>
+            </div>
+
+            <div class="grid-item-home-mini">
+                Adresa: <b> <%= data.ulica  %> <%= data.kucnibr  %>, <%= data.grad  %>, <%= data.drzava  %> </b>
+            </div>
+
+            <div class="grid-item-home-mini">
+                Email: <b> <%= data.email  %> </b>
+            </div>
+
+            <div class="grid-item-home-mini">
+                Broj Telefona: <b> <%= data.brtelefon  %> </b>
+            </div>
+            <br>
+            <div class="grid-item-home-mini">
+                <button onclick="seeformData()"> Promijeni podatke </button>
+            </div>
+
+            
+            <div class="grid-item-home-mini" style="display: none;"  id="meta">
+                <form class="zahtjevForma" action="/log/promjena" method="POST" >
+                    <br>
+                    <br>
+                    <div>
+                        <label>
+                           Ime (max. 40 znakova):
+                        </label>
+                        <input type="text" id="ime" name="ime" maxlength="40" required value=<%= data.ime%> >
+                    </div>
+
+                    <div>
+                        <label>
+                            Prezime (max. 40 znakova):
+                        </label>
+                        <input type="text" id="prezime" name="prezime" maxlength="40" required value=<%= data.prezime%> >
+                    </div>
+                   
+                    <div>
+                        <label>
+                            Ulica (max. 40 znakova):
+                        </label>
+                        <input type="text" id="ulica" name="ulica" maxlength="40" required value=<%= data.ulica%> >
+                    </div>
+
+                    <div>
+                        <label>
+                            Kućni broj (max. 40 znakova):
+                        </label>
+                        <input type="text" id="kucnibr" name="kucnibr" maxlength="40" required value=<%= data.kucnibr%> >
+                    </div>
+
+                    <div>
+                        <label>
+                            Grad (max. 40 znakova):
+                        </label>
+                        <input type="text" id="grad" name="grad" maxlength="40" required value=<%= data.grad%>>
+                    </div>
+                    
+                    <div>
+                        <label>
+                            Drzava (max. 40 znakova):
+                        </label>
+                        <input type="text" id="drzava" name="drzava" maxlength="40" required value=<%= data.drzava%>>
+                    </div>
+
+                    <div>
+                        <label>
+                            Broj telefona:
+                        </label>
+                        <input type="text" id="brtelefon" name="brtelefon" maxlength="40" required value=<%= data.brtelefon%>>
+                    </div>
+                    <div>
+                        <input class="gumb" type="submit" name=”gumb" value="Podnesi"> 
+                    </div>
+                </form>
+            </div>
+
+
+
+        </div>
+    
+        </div>
+
+        
+    </div>
+
+    <%- include('partials/footer') %>
+</body>
+    <script src="/scripts/fje.js"></script>
+</html>
