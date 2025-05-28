@@ -1,0 +1,362 @@
+
+1) TRIGGER ZA izračun udjela 
+
+CREATE OR REPLACE FUNCTION fjaUdioNekretnine() RETURNS trigger AS
+
+$$
+	DECLARE 
+		brojac NUMERIC = 0.0;
+
+	BEGIN 
+		brojac = (SELECT SUM(udio) FROM jeVlasnik WHERE idnekretnine= NEW.idnekretnine) ;
+	
+		IF(brojac > 1.05) THEN
+			RAISE EXCEPTION 'Nekretnina ima zbroj udijela većih od 100%%' 
+			USING HINT = ' Provjerite već upisane udjele za taj id u jeVlasnik';
+		END IF;
+		
+		RETURN NEW;
+	END;	
+	
+$$ LANGUAGE plpgsql;
+
+
+
+CREATE TRIGGER udioNekretnine 
+	AFTER INSERT OR UPDATE ON jeVlasnik
+		FOR EACH ROW EXECUTE PROCEDURE fjaUdioNekretnine();
+
+-------------------------------------------------------------------------------------
+2) TRIGGER za automatsku upis glasanja u odliku (ako nije uključena kvadratura)
+CREATE OR REPLACE FUNCTION fjaGlasnanjeBezKvadrata() RETURNS trigger AS
+$$
+DECLARE 
+    suma INT = 0;
+    brojac INT = 0; 
+	kvadratura INT = 0;
+	
+BEGIN 
+    -- Suma odluka
+    SELECT SUM(odluka) INTO suma 
+    	FROM jeodobren WHERE idzahtjeva = NEW.idzahtjeva;
+    
+    -- Brojanje koliko ima odluka = 0
+    SELECT COUNT(CASE WHEN odluka = 0 THEN 1 END) INTO brojac 
+		FROM jeodobren WHERE idzahtjeva = NEW.idzahtjeva;
+	
+	SELECT kvadraturno INTO kvadratura 
+		FROM zahtjev WHERE idzahtjeva = NEW.idzahtjeva;
+
+    -- Ako nema odluka sa 0
+    IF (brojac = 0 AND kvadratura <=0) THEN
+        -- Ako je suma veća ili jednaka 0, odobri zahtjev
+        IF suma >= 0 THEN
+            UPDATE zahtjev 
+            SET (odobren, aktivan) = (1, 0)
+            WHERE idzahtjeva = NEW.idzahtjeva;
+        -- Ako je suma manja od 0, odbij zahtjev
+        ELSIF suma < 0 THEN
+            UPDATE zahtjev 
+            SET (odobren, aktivan) = (-1, 0)
+            WHERE idzahtjeva = NEW.idzahtjeva;
+        END IF;
+    END IF;
+
+    RETURN NEW;
+END; 
+$$ 
+LANGUAGE plpgsql;
+
+CREATE TRIGGER glasnanjeBezKvadrata 
+	AFTER INSERT OR UPDATE ON jeOdluka
+		FOR EACH ROW EXECUTE PROCEDURE fjaGlasnanjeBezKvadrata();
+
+-------------------------------------------------------------------------------------
+3) TRIGGER za automatsko povećanje kvadrature
+CREATE OR REPLACE FUNCTION fjaUkupnaPovrsina() RETURNS trigger AS
+
+$$
+	DECLARE 
+		brojac NUMERIC = 0.0;
+
+	BEGIN 
+		brojac = (SELECT ukpovrsina FROM zgrada WHERE idZgrade = NEW.idZgrade) + NEW.povrsina;
+		
+		UPDATE zgrada SET ukpovrsina=brojac WHERE idZgrade = NEW.idZgrade;
+
+		RETURN NEW;
+	END;	
+	
+$$ LANGUAGE plpgsql;
+
+/*
+CREATE TRIGGER UkupnaPovrsina 
+	AFTER INSERT OR UPDATE ON jedinica
+		FOR EACH ROW EXECUTE PROCEDURE fjaUkupnaPovrsina(); */
+
+-------------------------------------------------------------------------------------
+4) kvadraturno glasnjae 
+CREATE OR REPLACE FUNCTION fjaGlasanjeKvadraturna() RETURNS trigger AS
+
+$$
+DECLARE 
+    suma INT = 0;
+    brojac INT = 0; 
+	kvadratura INT = 0;
+	
+BEGIN 
+    -- Suma odluka
+    SELECT SUM(povrsina*odluka*udio) INTO suma
+		FROM jeodobren NATURAL JOIN zahtjev 
+			JOIN jedinica ON jedinica.idZgrade = zahtjev.idZgrade 
+			JOIN jeVlasnik ON jedinica.idNekretnine = jeVlasnik.idNekretnine AND jeodobren.email = jeVlasnik.email
+		WHERE idzahtjeva =  NEW.idzahtjeva;
+    
+    -- Brojanje koliko ima odluka = 0
+    SELECT COUNT(CASE WHEN odluka = 0 THEN 1 END) INTO brojac 
+		FROM jeodobren WHERE idzahtjeva = NEW.idzahtjeva;
+	
+	SELECT kvadraturno INTO kvadratura 
+		FROM zahtjev WHERE idzahtjeva = NEW.idzahtjeva;
+
+    -- Ako nema odluka sa 0
+    IF (brojac = 0 AND kvadratura =1) THEN
+        -- Ako je suma veća ili jednaka 0, odobri zahtjev
+        IF suma >= 0 THEN
+            UPDATE zahtjev 
+            SET (odobren, aktivan) = (1, 0)
+            WHERE idzahtjeva = NEW.idzahtjeva;
+        -- Ako je suma manja od 0, odbij zahtjev
+        ELSIF suma < 0 THEN
+            UPDATE zahtjev 
+            SET (odobren, aktivan) = (-1, 0)
+            WHERE idzahtjeva = NEW.idzahtjeva;
+        END IF;
+    END IF;
+
+    RETURN NEW;
+END; 
+$$ LANGUAGE plpgsql;
+
+/*
+CREATE TRIGGER GlasanjeKvadraturna 
+	AFTER INSERT OR UPDATE ON jeodobren
+		FOR EACH ROW EXECUTE PROCEDURE fjaGlasanjeKvadraturna(); 
+*/
+-------------------------------------------------------------------------------------
+5) kvadraturno glasanje na razini jedinice (svaka od vrijednosti kvadrature je šifra akcije)
+CREATE OR REPLACE FUNCTION fjaGlasanjeKvadraturnaJedinica() RETURNS trigger AS
+
+$$
+DECLARE 
+    suma INT = 0;
+    brojac INT = 0; 
+	kvadratura INT = 0;
+	
+BEGIN 
+    -- Suma odluka
+    SELECT SUM(povrsina*odluka*udio) INTO suma
+		FROM jeodobren NATURAL JOIN zahtjev NATURAL JOIN jedinica NATURAL JOIN jeVlasnik 
+		WHERE idzahtjeva =  NEW.idzahtjeva;
+    
+    -- Brojanje koliko ima odluka = 0
+    SELECT COUNT(CASE WHEN odluka = 0 THEN 1 END) INTO brojac 
+		FROM jeodobren WHERE idzahtjeva = NEW.idzahtjeva;
+	
+	SELECT kvadraturno INTO kvadratura 
+		FROM zahtjev WHERE idzahtjeva = NEW.idzahtjeva;
+
+    -- Ako nema odluka sa 0
+    IF (brojac = 0 AND kvadratura > 1) THEN
+        IF suma >= 0 THEN
+            UPDATE zahtjev 
+            SET (odobren, aktivan) = (1, 0)
+            WHERE idzahtjeva = NEW.idzahtjeva;
+			
+        ELSIF suma < 0 THEN
+            UPDATE zahtjev 
+            SET (odobren, aktivan) = (-1, 0)
+            WHERE idzahtjeva = NEW.idzahtjeva;
+        END IF;
+    END IF;
+
+    RETURN NEW;
+END; 
+$$ LANGUAGE plpgsql;
+
+-------------------------------------------------------------------------------------
+6) trigger za terminaciju najma nakon glasanja više suvlasnika nekretnine
+
+REATE OR REPLACE FUNCTION fjaBrisanjeGlasovanje() RETURNS trigger AS
+
+$$
+DECLARE 
+    odobrenVar INT = 0; 
+	kvadraturnoVar INT = 0;
+	aktivanVar INT = 0;
+	
+BEGIN 
+
+    SELECT kvadraturno INTO kvadraturnoVar 
+		FROM zahtjev WHERE idzahtjeva = NEW.idzahtjeva;
+	SELECT odobren INTO odobrenVar 
+		FROM zahtjev WHERE idzahtjeva = NEW.idzahtjeva;
+	SELECT aktivan INTO aktivanVar 
+		FROM zahtjev WHERE idzahtjeva = NEW.idzahtjeva;
+
+	IF(aktivanVar = 0 AND kvadraturnoVar = 2) THEN
+		IF(odobrenVar = 1) THEN
+			DELETE FROM jeUNajmu WHERE idnekretnine = NEW.idnekretnine;
+		END IF;
+	END IF;
+	
+    RETURN NEW;
+END; 
+$$ LANGUAGE plpgsql;
+
+
+CREATE TRIGGER BrisanjeGlasovanje 
+	AFTER INSERT OR UPDATE ON zahtjev
+		FOR EACH ROW EXECUTE PROCEDURE fjaBrisanjeGlasovanje(); 
+
+-------------------------------------------------------------------------------------
+7) trigger za promjenu broja stanara (koje zahtjevom potvrđuje predstavnik stanara)
+CREATE OR REPLACE FUNCTION fjaPromjenaBrojStanara() RETURNS trigger AS
+
+$$
+DECLARE 
+    odobrenVar INT = 0; 
+	kvadraturnoVar INT = 0;
+	aktivanVar INT = 0;
+	brljudi INT = 0; 
+	
+BEGIN 
+
+    SELECT kvadraturno INTO kvadraturnoVar 
+		FROM zahtjev WHERE idzahtjeva = NEW.idzahtjeva;
+	SELECT odobren INTO odobrenVar 
+		FROM zahtjev WHERE idzahtjeva = NEW.idzahtjeva;
+	SELECT aktivan INTO aktivanVar 
+		FROM zahtjev WHERE idzahtjeva = NEW.idzahtjeva;
+
+	IF(aktivanVar = 0 AND kvadraturnoVar = -1) THEN
+		IF(odobrenVar = 1) THEN
+			brljudi = CAST (SUBSTRING(NEW.kratakopis FROM 19 FOR 2) AS INT);
+			
+			UPDATE jedinica SET brukucana = brljudi WHERE idnekretnine = NEW.idnekretnine;
+		END IF;
+	END IF;
+	
+    RETURN NEW;
+END; 
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER PromjenaBrojStanara 
+	AFTER INSERT OR UPDATE ON zahtjev
+		FOR EACH ROW EXECUTE PROCEDURE fjaPromjenaBrojStanara(); 
+
+-------------------------------------------------------------------------------------
+8) trigger za dodavanje najma
+CREATE OR REPLACE FUNCTION fjaDodavanjeGlasovanje() RETURNS trigger AS
+
+$$
+DECLARE 
+    odobrenVar INT = 0; 
+	kvadraturnoVar INT = 0;
+	aktivanVar INT = 0;
+	
+BEGIN 
+
+    SELECT kvadraturno INTO kvadraturnoVar 
+		FROM zahtjev WHERE idzahtjeva = NEW.idzahtjeva;
+	SELECT odobren INTO odobrenVar 
+		FROM zahtjev WHERE idzahtjeva = NEW.idzahtjeva;
+	SELECT aktivan INTO aktivanVar 
+		FROM zahtjev WHERE idzahtjeva = NEW.idzahtjeva;
+
+	IF(aktivanVar = 0 AND kvadraturnoVar = 3) THEN
+		IF(odobrenVar = 1) THEN
+			INSERT INTO jeUNajmu (idnekretnine, emailnajam) VALUES (NEW.idnekretnine, NEW.emailpodnositelj);
+		END IF;
+	END IF;
+	
+    RETURN NEW;
+END; 
+$$ LANGUAGE plpgsql;
+
+
+CREATE TRIGGER DodavanjeGlasovanje 
+	AFTER INSERT OR UPDATE ON zahtjev
+		FOR EACH ROW EXECUTE PROCEDURE fjaDodavanjeGlasovanje(); 
+
+
+-------------------------------------------------------------------------------------
+9) trigger za promjenu vlasništva nad (udjelom) jedinice nakon što je predstavnik potvrdio
+CREATE OR REPLACE FUNCTION fjaPromjenaVlasnikaNekretnine() RETURNS trigger AS
+
+$$
+DECLARE 
+    odobrenVar INT = 0; 
+	kvadraturnoVar INT = 0;
+	aktivanVar INT = 0;
+	brljudi INT = 0; 
+	
+BEGIN 
+
+    SELECT kvadraturno INTO kvadraturnoVar 
+		FROM zahtjev WHERE idzahtjeva = NEW.idzahtjeva;
+	SELECT odobren INTO odobrenVar 
+		FROM zahtjev WHERE idzahtjeva = NEW.idzahtjeva;
+	SELECT aktivan INTO aktivanVar 
+		FROM zahtjev WHERE idzahtjeva = NEW.idzahtjeva;
+
+	IF(aktivanVar = 0 AND kvadraturnoVar = -2) THEN
+		IF(odobrenVar = 1) THEN
+			UPDATE jeVlasnik SET email = NEW.kratakopis 
+				WHERE idnekretnine = NEW.idnekretnine AND email = NEW.emailpodnositelj;
+		END IF;
+	END IF;
+	
+    RETURN NEW;
+END; 
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER PromjenaVlasnikaNekretnine 
+	AFTER INSERT OR UPDATE ON zahtjev
+		FOR EACH ROW EXECUTE PROCEDURE fjaPromjenaVlasnikaNekretnine(); 
+
+
+-------------------------------------------------------------------------------------
+10) trigger za spajanje udjela nad istom nekretninom  
+CREATE OR REPLACE FUNCTION fjaSpajanjeUdjelaVlasnika() RETURNS trigger AS
+$$
+DECLARE 
+   trenUdio NUMERIC = 0.0;
+BEGIN 
+    -- Check if the record already exists
+    SELECT udio INTO trenUdio 
+    FROM jeVlasnik 
+    WHERE idnekretnine = NEW.idnekretnine AND email = NEW.email;
+    
+    IF FOUND THEN
+        -- Update the share in the NEW record
+        NEW.udio := NEW.udio + trenUdio;
+        
+        -- Delete the existing record
+        DELETE FROM jeVlasnik 
+        WHERE idnekretnine = NEW.idnekretnine AND email = NEW.email;
+    END IF;
+    
+    -- Proceed with the insert
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+
+/*
+CREATE TRIGGER SpajanjeUdjelaVlasnika 
+	BEFORE INSERT OR UPDATE ON jeVlasnik
+		FOR EACH ROW EXECUTE PROCEDURE fjaSpajanjeUdjelaVlasnika(); */
+
+-------------------------------------------------------------------------------------
+11) trigger za 
