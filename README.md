@@ -10,6 +10,6 @@ Omogućeno:
 - odobravanje ili odbijanje zahtjeva stanara 
 - unošenje više različitih zgrada 
 - pregled podataka i prošlih zahtjeva
-- 
+  
 Sustav je izveden pomoću JavaScripta, CSS-a, PostgreSQL-baza i triggera u njima.
 trenutno sustav nije javno dostupan, već je dostupan na GitHub-u te ga je potrebno lokalno pokrenuti
